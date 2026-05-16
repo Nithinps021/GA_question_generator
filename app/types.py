@@ -1,6 +1,4 @@
-# ==========================================
-# 1. DEFINE STRUCTURED JSON SCHEMAS
-# ==========================================
+
 from typing import List
 
 from pydantic import BaseModel, Field
