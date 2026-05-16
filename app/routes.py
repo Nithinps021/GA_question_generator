@@ -1,7 +1,8 @@
 import asyncio
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.auth import verify_api_key
 from app.services import get_subscribed_users, get_questions, broadcast_quiz, save_quiz
 from app.utils import get_logger
 
@@ -10,7 +11,7 @@ logger = get_logger(__name__)
 router = APIRouter()
 
 
-@router.get("/broadcast-quiz")
+@router.get("/broadcast-quiz", dependencies=[Depends(verify_api_key)])
 async def generate_and_broadcast_quiz():
     chat_ids = get_subscribed_users()
     if not chat_ids:
