@@ -1,14 +1,20 @@
 import json
+import os
 
 from google import genai
 from google.genai import types
 
-from app.types import DailyQuizPayload
+from app.types import DailyQuiz
+from app.utils import get_logger
+
+logger = get_logger(__name__)
 
 
-def fetch_ai_quiz() -> dict:
-    """Calls Gemini with Google Search grounding and extracts the verified structured schema."""
-    # The client automatically picks up GEMINI_API_KEY from the environment
+def generate_questions() -> dict:
+    """
+    Generates a 20-question GA quiz using Gemini
+    with Google Search Grounding and broadcasts it to all active Firestore subscribers.
+    """
     client = genai.Client()
 
     golden_prompt = (
@@ -23,23 +29,31 @@ def fetch_ai_quiz() -> dict:
         "Avoid generic or outdated current affairs.\n"
         "3. Balance the 20 questions across: 60% Current Financial/Banking/Economic Affairs, 20% Latest National/International General Current Affairs, "
         "and 20% Static Banking Concepts (grounded or triggered by recent news trends).\n"
-        "4. Strictly verify information across multiple search fragments to avoid hallucinations. Do not invent fake financial announcements."
+        "4. Strictly verify information across multiple search fragments to avoid hallucinations. Do not invent fake financial announcements.\n\n"
+        "RESPONSE FORMAT:\n"
+        "Return ONLY valid JSON (no markdown, no code fences) matching this exact schema:\n"
+        '{"date": "YYYY-MM-DD", "quiz": [{"question": "...", "options": ["A) ...", "B) ...", "C) ...", "D) ..."], "answer": "A", "explanation": "..."}]}\n'
+        "The quiz array must contain exactly 20 items."
     )
 
     config = types.GenerateContentConfig(
         system_instruction=golden_prompt,
         tools=[types.Tool(google_search=types.GoogleSearch())],  # Turn on Google Search Grounding
         temperature=0.2,  # Low temperature enforces high factual accuracy
-        response_mime_type="application/json",
-        response_schema=DailyQuizPayload,
     )
 
     user_intent = "Fetch the latest relevant current affairs and compile today's comprehensive 20-question banking exam GA quiz."
 
+    logger.info("Sending request to Gemini (model: gemini-2.5-flash)")
     response = client.models.generate_content(
-        model='gemini-2.5-flash',
+        model=os.environ.get("GEMINI_MODEL"),
         contents=user_intent,
         config=config
     )
 
-    return json.loads(response.text)
+    logger.info("Received response from Gemini, parsing quiz data")
+    text = response.text.strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[1]  # remove opening ```json
+        text = text.rsplit("```", 1)[0]  # remove closing ```
+    return json.loads(text)
