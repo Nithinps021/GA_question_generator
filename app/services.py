@@ -35,16 +35,7 @@ def save_quiz(quiz: DailyQuiz):
         raise HTTPException(status_code=500, detail=f"Database Write Error: {str(e)}")
 
 
-def broadcast_quiz(question: DailyQuiz, users: list[str]):
-    # # Verify environment variables are configured
-    # bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
-    # if not bot_token:
-    #     logger.error("Missing TELEGRAM_BOT_TOKEN environment variable")
-    #     raise HTTPException(status_code=500, detail="Missing TELEGRAM_BOT_TOKEN environment variable.")
-    pass
-
-    # 3. Broadcast generated content to all tracked accounts
-    # broadcast_to_subscribers(quiz_data, chat_ids, bot_token)
-    # logger.info("Broadcasted quiz to %d users", len(chat_ids))
-    # return {"message": f"Successfully processed and broadcasted quiz to {len(chat_ids)} users."}
+async def broadcast_quiz(question: DailyQuiz, users: list[str]):
+    from telegram.broadcaster import broadcast_first_question
+    await broadcast_first_question(question, users)
 

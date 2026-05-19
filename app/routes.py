@@ -22,8 +22,7 @@ async def generate_and_broadcast_quiz():
 
     await asyncio.gather(
         asyncio.to_thread(save_quiz, questions),
-        asyncio.to_thread(broadcast_quiz, question=questions, users=chat_ids)
+        broadcast_quiz(question=questions, users=chat_ids),
     )
-    return {"quiz_data": questions}
     return {"message": f"Successfully processed and broadcasted quiz to {len(chat_ids)} users."}
 
