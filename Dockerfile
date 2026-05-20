@@ -7,5 +7,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app/ app/
 COPY telegram/ telegram/
+COPY start.sh start.sh
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# 5. Make your start script executable
+RUN chmod +x start.sh
+
+# 6. Execute the script using the exec array form
+CMD ["./start.sh"]
