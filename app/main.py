@@ -1,4 +1,4 @@
-import asyncio
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -6,16 +6,17 @@ from fastapi import FastAPI
 from app.utils import setup_logging
 from app.routes import router
 from telegram.webhook import router as telegram_router
-from telegram.api import close_client
-from telegram.polling import start_polling
+from telegram.api import ga_bot, en_bot
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    polling_task = asyncio.create_task(start_polling())
+    webhook_url = os.environ["WEBHOOK_URL"]
+    await ga_bot.set_webhook(f"{webhook_url}/telegram/ga/webhook")
+    await en_bot.set_webhook(f"{webhook_url}/telegram/en/webhook")
     yield
-    polling_task.cancel()
-    await close_client()
+    await ga_bot.close()
+    await en_bot.close()
 
 
 setup_logging()

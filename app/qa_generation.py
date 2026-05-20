@@ -4,7 +4,6 @@ import os
 from google import genai
 from google.genai import types
 
-from app.types import DailyQuiz
 from app.utils import get_logger
 
 logger = get_logger(__name__)

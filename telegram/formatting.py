@@ -1,33 +1,39 @@
-from app.types import QuestionItem
+from app.types import QuestionItem, EnglishQuestionItem
 
 
-def format_question(question: QuestionItem, index: int, total: int) -> str:
+def format_question(question: QuestionItem | EnglishQuestionItem, index: int, total: int) -> str:
     options_text = "\n".join(question.options)
+    header = f"<b>Question {index + 1} of {total}</b>"
+    if hasattr(question, "direction") and question.direction:
+        header += f"\n<i>{question.direction}</i>"
     return (
-        f"<b>Question {index + 1} of {total}</b>\n\n"
+        f"{header}\n\n"
         f"{question.question}\n\n"
         f"{options_text}"
     )
 
 
 def build_options_keyboard(
-    quiz_date: str, question_index: int, correct_answer: str, score: int
+    quiz_type: str,
+    quiz_date: str,
+    question_index: int,
+    correct_answer: str,
+    score: int,
+    num_options: int = 4,
 ) -> dict:
-    options = ["A", "B", "C", "D"]
+    all_options = ["A", "B", "C", "D", "E"]
+    options = all_options[:num_options]
     buttons = []
     for opt in options:
-        callback_data = f"{quiz_date}:{question_index}:{correct_answer}:{opt}:{score}"
+        callback_data = f"{quiz_type}:{quiz_date}:{question_index}:{correct_answer}:{opt}:{score}"
         buttons.append({"text": opt, "callback_data": callback_data})
-    return {
-        "inline_keyboard": [
-            buttons[:2],
-            buttons[2:],
-        ]
-    }
+    # Layout: rows of 2, with remainder on last row
+    rows = [buttons[i:i + 2] for i in range(0, len(buttons), 2)]
+    return {"inline_keyboard": rows}
 
 
 def format_correct_response(
-    question: QuestionItem, index: int, total: int, selected: str
+    question: QuestionItem | EnglishQuestionItem, index: int, total: int, selected: str
 ) -> str:
     base = format_question(question, index, total)
     return (
@@ -38,7 +44,7 @@ def format_correct_response(
 
 
 def format_wrong_response(
-    question: QuestionItem, index: int, total: int, selected: str
+    question: QuestionItem | EnglishQuestionItem, index: int, total: int, selected: str
 ) -> str:
     base = format_question(question, index, total)
     return (
