@@ -10,6 +10,9 @@ logger = get_logger(__name__)
 
 router = APIRouter()
 
+@router.get("/healt-check")
+async def healt_check():
+    return {"status":True}
 
 @router.get("/broadcast-quiz", dependencies=[Depends(verify_api_key)])
 async def generate_and_broadcast_quiz():

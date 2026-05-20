@@ -1,0 +1,8 @@
+.venv/
+.venv1/
+.env
+*.pyc
+__pycache__/
+service_account.json
+env.yaml
+.git/
