@@ -1,4 +1,5 @@
 import json
+import os
 import uuid
 
 from google import genai
@@ -15,25 +16,26 @@ def generate_english_questions() -> dict:
 
     golden_english_prompt = (
         """
-        You are an elite English Language faculty and exam setter for India's toughest banking exams (SBI PO, IBPS PO, SBI Clerk).
-        Your task is to generate exactly 20 highly standard, Medium to Hard difficulty English questions matching the latest previous year question patterns.
-        CRITICAL EXAM PATTERN INSTRUCTIONS:
-        1. Context: Base your sentences on banking, economy, geopolitics, environment, or 'The Hindu' editorial-style themes. No casual or trivial sentences.
-        2. Options: Every question MUST have exactly 5 options (A, B, C, D, E). 
-        3. Topics to cover (Ensure a balanced, unpredictable mix across these areas):
-           - Error Spotting: Test advanced grammar (Subject-Verb Inversion, Parallelism, Conditional Clauses, Phrasal prepositions).
-           - Phrase Replacement / Sentence Improvement: Bold a grammatical phrase; options must offer structurally close alternatives. Option E is 'No correction required'.
-           - Word Swap: Bold 3 to 4 words in a sentence. Options must suggest which pair to swap for contextual coherence.
-           - Fillers (Double or Single): Require advanced vocabulary where blanks are contextually linked.
-           - Idioms & Phrases / Spelling Context: Test contextual application of banking/standard idioms.
-        4. Explanations: Provide a crystal-clear, deep-dive grammatical or vocabulary explanation so a student learns the exact rule they missed.
-        5. Randomization & Freshness: You MUST highly randomize the vocabulary, sentence contexts, and grammatical rules tested. Never repeat exact contexts, 
-        sentence structures, or specific idioms across different generations. Treat this as a completely fresh, unpredictable mock test so the user does not 
-        experience repetitive patterns.
-        "RESPONSE FORMAT:\n"
-        "Return ONLY valid JSON (no markdown, no code fences) matching this exact schema:\n"
-        '{"date": "YYYY-MM-DD", "quiz": [{"question": "...", "options": ["A) ...", "B) ...", "C) ...", "D) ..."], "answer": "A", "explanation": "..."}]}\n'
-        "The quiz array must contain exactly 20 items."
+       You are an elite English Language faculty and exam setter for India's toughest banking exams (SBI PO, IBPS PO, RBI Grade B). Your task is to generate exactly 20 highly standard, Medium to Hard difficulty English questions matching the latest exam patterns.
+       CRITICAL EXAM PATTERN & VARIETY INSTRUCTIONS:
+       1. Diverse Contexts (The Hindu/The Economist Style): Base your sentences on diverse, serious themes including economics, global geopolitics, climate science, public policy, advanced technology, history, and social issues. Avoid casual or trivial sentences. Do not restrict the context solely to banking; mirror the wide-ranging, dense prose of actual exam papers.
+       2. Strict Pattern Rotation (Day-to-Day Variety): To ensure the user faces a completely unpredictable mock test each time, you must deliberately rotate and mix the question formats. If a previous batch leaned heavily on standard Error Spotting, this batch must emphasize different structures (e.g., Sentence Divider Errors, Cloze-style fillers, or Column Matching). Do not let the quiz feel like a template.
+       3. Complete Freshness (No Batch Duplication): Every single question, vocabulary word, idiom, and grammatical trap must be created from scratch. Avoid repeating sentence structures, specific error types (like the exact same subject-verb inversion rule), or core vocabulary words used in previous batches.
+       4. Options: Every question MUST have exactly 5 options (A, B, C, D, E).
+       5. Comprehensive Topic Mix (Select a dynamic mix for this batch):
+           - Advanced Error Spotting: (e.g., split sentences, parallel structures, subjunctive mood, advanced prepositions).
+           - Phrase Replacement / Sentence Improvement: Bold a complex grammatical phrase; Option E must be 'No correction required'.
+           - Contextual Word Swap: Bold 3 to 4 words that need rearrangement for coherence.
+           - Double/Triple Fillers: Advanced vocabulary where blanks rely heavily on contextual tone and secondary meanings of words.
+           - Idioms & Phrasal Verbs: Test the precise application of standard/business idioms in context.
+
+        6. Explanations: Provide a crystal-clear, deep-dive grammatical or vocabulary explanation so a student learns the exact rule or nuance they missed.
+
+        RESPONSE FORMAT:
+        Return ONLY valid JSON (no markdown, no code fences) matching this exact schema:
+        {"date": "YYYY-MM-DD", "quiz": [{"question": "...", "options": ["A) ...", "B) ...", "C) ...", "D) ...", "E) ..."], "answer": "A", "explanation": "..."}]}
+        
+        The quiz array must contain exactly 20 items.
         """
     )
 
@@ -52,7 +54,7 @@ def generate_english_questions() -> dict:
     user_request = f"Generate a fresh, highly randomized set of 20 medium-to-hard banking English questions. Execution ID: {run_id}"
 
     response = client.models.generate_content(
-        model='gemini-2.5-flash',
+        model=os.environ.get("GEMINI_MODEL"),
         contents=user_request,
         config=config
     )

@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 
 from fastapi import APIRouter, Depends
 
@@ -42,6 +43,7 @@ async def generate_and_broadcast_english_quiz():
         return {"message": "No active English subscribers found."}
 
     questions = get_english_questions()
+    questions.date = datetime.now().isoformat()
 
     await asyncio.gather(
         asyncio.to_thread(save_quiz, questions, "en_questions"),
