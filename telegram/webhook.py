@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from fastapi import APIRouter, Request
 
 from app.db import db
@@ -41,8 +43,9 @@ def _parse_callback_data(data: str) -> tuple[str, str, int, str, str, int] | Non
         return None
 
 
-def _get_quiz_questions(quiz_type: str, quiz_date: str) -> list[QuestionItem | EnglishQuestionItem] | None:
-    """Fetch quiz questions from Firestore by type and date."""
+@lru_cache(maxsize=8)
+def _get_quiz_questions(quiz_type: str, quiz_date: str) -> tuple[QuestionItem | EnglishQuestionItem, ...] | None:
+    """Fetch quiz questions from Firestore by type and date (cached)."""
     config = QUIZ_CONFIG[quiz_type]
     doc = db.collection(config["collection"]).document(quiz_date).get()
     if not doc.exists:
@@ -50,7 +53,7 @@ def _get_quiz_questions(quiz_type: str, quiz_date: str) -> list[QuestionItem | E
     data = doc.to_dict()
     if not data or "quiz" not in data:
         return None
-    return [config["model"](**q) for q in data["quiz"]]
+    return tuple(config["model"](**q) for q in data["quiz"])
 
 
 async def _handle_callback_query(bot: TelegramBot, callback_query: dict):
