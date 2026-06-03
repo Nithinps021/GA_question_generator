@@ -5,7 +5,7 @@ from google.cloud.firestore_v1.base_query import FieldFilter
 from app.db import db
 from app.en_generator import generate_english_questions
 from app.qa_generation import generate_questions
-from app.types import DailyQuiz, DailyEnglishQuiz
+from app.types import DailyQuiz, DailyEnglishQuiz, ReferenceSection
 from app.utils import get_logger
 
 logger = get_logger(__name__)
@@ -49,3 +49,12 @@ async def broadcast_quiz(question: DailyQuiz | DailyEnglishQuiz, users: list[str
     from telegram.broadcaster import broadcast_first_question
     await broadcast_first_question(BOTS[quiz_type], question, users, quiz_type=quiz_type)
 
+
+def inject_reference_questions(data: ReferenceSection):
+    try:
+        doc_ref = db.collection(data.collection).document(data.section_name)
+        doc_ref.set({"questions": [q.model_dump() for q in data.questions]})
+        logger.info("Injected data into firestore collection %s", data.collection)
+    except Exception as e:
+        logger.exception("Failed to save quiz to Firestore")
+        raise HTTPException(status_code=500, detail=f"Database Write Error: {str(e)}")

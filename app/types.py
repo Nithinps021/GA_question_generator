@@ -28,3 +28,18 @@ class EnglishQuestionItem(BaseModel):
 class DailyEnglishQuiz(BaseModel):
     date: str = Field(description="Today's date in YYYY-MM-DD format.", default=datetime.now().strftime("%Y-%m-%d"))
     quiz: List[EnglishQuestionItem] = Field(description="An array containing the generated medium-to-hard English questions.")
+
+
+class ReferenceQuestion(BaseModel):
+    exam_name: str = Field(description="The exam this question appeared in, e.g., 'SBI PO Prelims'.")
+    year: int = Field(description="The year the question appeared in the exam.")
+    question: str = Field(description="The full question text with labeled parts.")
+    options: List[str] = Field(description="List of answer options, e.g., ['A', 'B', 'C', 'D', 'E'].")
+    answer: str = Field(description="The correct option letter.")
+    explanation: str = Field(description="Explanation of why the answer is correct.")
+
+
+class ReferenceSection(BaseModel):
+    collection: str = Field(description="The collections this section belongs to.")
+    section_name: str = Field(description="The topic/section name, e.g., 'Error Spotting', 'Phrase Replacement'.")
+    questions: List[ReferenceQuestion] = Field(description="List of reference questions for this section.")

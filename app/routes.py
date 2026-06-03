@@ -4,7 +4,9 @@ from datetime import datetime
 from fastapi import APIRouter, Depends
 
 from app.auth import verify_api_key
-from app.services import get_english_questions, get_questions, get_subscribed_users, broadcast_quiz, save_quiz
+from app.services import get_english_questions, get_questions, get_subscribed_users, broadcast_quiz, save_quiz, \
+    inject_reference_questions
+from app.types import ReferenceSection
 from app.utils import get_logger
 
 logger = get_logger(__name__)
@@ -50,3 +52,9 @@ async def generate_and_broadcast_english_quiz():
         broadcast_quiz(question=questions, users=chat_ids, quiz_type="en"),
     )
     return {"message": f"English quiz broadcasted to {len(chat_ids)} users."}
+
+
+@router.post("/inject-questions", dependencies=[Depends(verify_api_key)])
+async def handle_inject_questions(data: ReferenceSection):
+    inject_reference_questions(data)
+    return {"message": f"Inject questions into {data.section_name} sections."}

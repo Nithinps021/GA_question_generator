@@ -2,6 +2,7 @@ import logging
 import sys
 
 
+
 def setup_logging():
     """Configure root logging for the application. Call once at startup."""
     logging.basicConfig(
@@ -15,3 +16,5 @@ def setup_logging():
 def get_logger(name: str) -> logging.Logger:
     """Return a named logger for the given module."""
     return logging.getLogger(name)
+
+
