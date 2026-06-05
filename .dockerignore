@@ -4,5 +4,6 @@
 *.pyc
 __pycache__/
 service_account.json
-env.yaml
+prod_env.yaml
+stag_env.yaml
 .git/

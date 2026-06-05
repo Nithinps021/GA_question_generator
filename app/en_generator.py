@@ -1,42 +1,56 @@
 import json
 import os
+import random
 import uuid
 
+from fastapi import HTTPException
 from google import genai
 from google.genai import types
 
+from app.db import db
 from app.types import DailyEnglishQuiz
 from app.utils import get_logger
 
 logger = get_logger(__name__)
 
 
+def build_prompt(file_name:str, reference_questions: list[dict]) -> str:
+    with open(f"prompt/{file_name}") as f:
+        prompt_template = f.read()
+
+    return prompt_template.replace(
+        "[INSERT_YOUR_JSON_DATA_HERE]",
+        json.dumps(reference_questions, indent=2)
+    )
+
+def get_random_questions_from_collection(collection: str) -> list[dict]:
+    """Get one random question from each document in a collection.
+
+    Each document is expected to have a 'questions' key containing an array.
+    Returns a list of dicts with 'section' (doc ID) and the random question fields.
+    """
+    try:
+        docs = db.collection(collection).stream()
+        random_questions = []
+        for doc in docs:
+            data = doc.to_dict()
+            questions = data.get("questions", [])
+            if questions:
+                question = random.choice(questions)
+                question["section"] = doc.id
+                random_questions.append(question)
+        return random_questions
+    except Exception as e:
+        logger.exception("Failed to fetch random questions from collection %s", collection)
+        raise HTTPException(status_code=500, detail=f"Database Fetch Error: {str(e)}")
+
+
 def generate_english_questions() -> dict:
-    client = genai.Client()
+    client = genai.Client(vertexai=True, api_key=os.environ.get("GEMINI_API_KEY"))
 
-    golden_english_prompt = (
-        """
-       You are an elite English Language faculty and exam setter for India's toughest banking exams (SBI PO, IBPS PO, RBI Grade B). Your task is to generate exactly 20 highly standard, Medium to Hard difficulty English questions matching the latest exam patterns.
-       CRITICAL EXAM PATTERN & VARIETY INSTRUCTIONS:
-       1. Diverse Contexts (The Hindu/The Economist Style): Base your sentences on diverse, serious themes including economics, global geopolitics, climate science, public policy, advanced technology, history, and social issues. Avoid casual or trivial sentences. Do not restrict the context solely to banking; mirror the wide-ranging, dense prose of actual exam papers.
-       2. Strict Pattern Rotation (Day-to-Day Variety): To ensure the user faces a completely unpredictable mock test each time, you must deliberately rotate and mix the question formats. If a previous batch leaned heavily on standard Error Spotting, this batch must emphasize different structures (e.g., Sentence Divider Errors, Cloze-style fillers, or Column Matching). Do not let the quiz feel like a template.
-       3. Complete Freshness (No Batch Duplication): Every single question, vocabulary word, idiom, and grammatical trap must be created from scratch. Avoid repeating sentence structures, specific error types (like the exact same subject-verb inversion rule), or core vocabulary words used in previous batches.
-       4. Options: Every question MUST have exactly 5 options (A, B, C, D, E).
-       5. Comprehensive Topic Mix (Select a dynamic mix for this batch):
-           - Advanced Error Spotting: (e.g., split sentences, parallel structures, subjunctive mood, advanced prepositions).
-           - Phrase Replacement / Sentence Improvement: Bold a complex grammatical phrase; Option E must be 'No correction required'.
-           - Contextual Word Swap: Bold 3 to 4 words that need rearrangement for coherence.
-           - Double/Triple Fillers: Advanced vocabulary where blanks rely heavily on contextual tone and secondary meanings of words.
-           - Idioms & Phrasal Verbs: Test the precise application of standard/business idioms in context.
-
-        6. Explanations: Provide a crystal-clear, deep-dive grammatical or vocabulary explanation so a student learns the exact rule or nuance they missed.
-
-        RESPONSE FORMAT:
-        Return ONLY valid JSON (no markdown, no code fences) matching this exact schema:
-        {"date": "YYYY-MM-DD", "quiz": [{"question": "...", "options": ["A) ...", "B) ...", "C) ...", "D) ...", "E) ..."], "answer": "A", "explanation": "..."}]}
-        
-        The quiz array must contain exactly 20 items.
-        """
+    golden_english_prompt = build_prompt(
+        file_name="prelims_question_generator.md",
+        reference_questions=get_random_questions_from_collection(collection="prelims_questions"),
     )
 
     config = types.GenerateContentConfig(
@@ -51,7 +65,7 @@ def generate_english_questions() -> dict:
     # Injecting a random UUID into the user prompt acts as a "salt".
     # It mathematically forces the LLM to see this as a brand-new request every single day.
     run_id = str(uuid.uuid4())
-    user_request = f"Generate a fresh, highly randomized set of 20 medium-to-hard banking English questions. Execution ID: {run_id}"
+    user_request = f"Generate the 30-question as per the blueprint and instructions. Execution ID: {run_id}"
 
     response = client.models.generate_content(
         model=os.environ.get("GEMINI_MODEL"),

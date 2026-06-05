@@ -7,6 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app/ app/
 COPY telegram/ telegram/
+COPY prompt/ prompt/
 COPY start.sh start.sh
 
 # 5. Make your start script executable

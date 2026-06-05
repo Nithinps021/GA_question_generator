@@ -26,26 +26,21 @@ For every single question you generate, you must execute an internal, invisible 
 2. Internally compare your draft against the user's reference question for that specific topic.
 3. Rate your question out of 100 based on four criteria: Blueprint Alignment (25 pts), Difficulty/Trap Authenticity (25 pts), Distractor Quality (25 pts), and Linguistic Polish (25 pts).
 4. GATEKEEPER RULE: If the internal score is 90 or below, silently discard it and regenerate. Only accept and output questions that score above 90. Do not output any thinking text, logs, or analysis. 
+5. Make sure 30 questions are always generated 
 
 # Output Format
 Output ONLY the final qualified array of 30 questions in clean, valid JSON format. Each question object must include its final evaluation score as a key inside the JSON.
 
-Use this exact JSON schema:
-
-[
-  {
-    "topic_block": "String (e.g., Reading Comprehension, Grammar & Usage, Vocabulary & Fillers, Verbal Ability)",
-    "sub_topic": "String (e.g., Error Spotting, Cloze Test, Para jumble)",
-    "question_text": "String containing the passage, main sentence, or structural direction",
-    "options": {
-      "a": "String",
-      "b": "String",
-      "c": "String",
-      "d": "String",
-      "e": "String"
-    },
-    "correct_option": "String (a/b/c/d/e)",
-    "detailed_explanation": "Comprehensive grammatical or contextual breakdown explaining why the correct key wins and why close distractors fail.",
-    "verified_quality_score": 94
-  }
-]
+RESPONSE FORMAT:
+Return ONLY valid JSON (no markdown, no code fences) matching this exact schema:
+        {"date": "YYYY-MM-DD", "quiz": [{
+                "question": "...", 
+                "options": ["A) ...", "B) ...", "C) ...", "D) ...", "E) ..."],
+                "answer": "A", 
+                "explanation": "...",
+                "topic_block": "String (e.g., Reading Comprehension, Grammar & Usage, Vocabulary & Fillers, Verbal Ability)",
+                "sub_topic": "String (e.g., Error Spotting, Cloze Test, Para jumble)",
+                "verified_quality_score": 94
+            }
+            ]
+        }

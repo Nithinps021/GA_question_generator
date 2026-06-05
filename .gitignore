@@ -3,4 +3,5 @@ __pycache__/
 *.pyc
 .env
 *.json
-env.yaml
+prod_env.yaml
+stag_env.yaml
