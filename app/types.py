@@ -24,6 +24,9 @@ class EnglishQuestionItem(BaseModel):
     options: List[str] = Field(description="Exactly 5 string options labeled 'A) ...', 'B) ...', 'C) ...', 'D) ...', 'E) ...'. For Error Spotting, option E is usually 'No Error'.")
     answer: str = Field(description="The exact correct letter: 'A', 'B', 'C', 'D', or 'E'.")
     explanation: str = Field(description="A highly detailed explanation of the grammatical rule, vocabulary context, or idiom meaning. It must perfectly explain why the answer is right and why the others fail.")
+    topic_block: str = Field(description="String (e.g., Reading Comprehension, Grammar & Usage, Vocabulary & Fillers, Verbal Ability)")
+    sub_topic: str = Field(description="String (e.g., Error Spotting, Cloze Test, Para jumble)")
+    verified_quality_score: str = Field(description="")
 
 class DailyEnglishQuiz(BaseModel):
     date: str = Field(description="Today's date in YYYY-MM-DD format.", default=datetime.now().strftime("%Y-%m-%d"))

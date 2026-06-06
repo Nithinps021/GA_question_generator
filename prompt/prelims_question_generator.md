@@ -6,6 +6,7 @@ Generate a balanced set of 30 Preliminary Examination English questions. The que
 
 1. Reading Comprehension (RC): 7 to 10 Questions
    -> Format: 1 continuous passage (usually corporate, basic socio-economic, or narrative-based), including 2-3 direct contextual vocabulary (synonym/antonym) questions embedded within the text.
+   -> Passage Handling: Include the full passage ONLY in the first RC question's "question" field. For all subsequent RC related questions, put ONLY the question text in the "question" field — do NOT repeat the passage. Use the "direction" field of subsequent RC questions to indicate "Based on the passage above" so users know to refer back to the passage from the first question.
    
 2. Grammar & Usage: 5 to 8 Questions
    -> Format: Direct single-sentence Error Spotting (divided into a/b/c/d/e parts) or Phrase Replacement (replacing a bolded line with the grammatically correct alternative).
