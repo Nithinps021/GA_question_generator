@@ -51,6 +51,22 @@ async def broadcast_quiz(question: DailyQuiz | DailyEnglishQuiz, users: list[str
     await broadcast_first_question(BOTS[quiz_type], question, users, quiz_type=quiz_type)
 
 
+def get_todays_questions(collection: str = "questions", output_file: str = "todays_questions.json") -> str:
+    import json
+    from datetime import date
+    today = date.today().strftime("%Y-%m-%d")
+    try:
+        doc = db.collection(collection).document(today).get()
+        questions = doc.to_dict().get("quiz", []) if doc.exists else []
+        with open(output_file, "w") as f:
+            json.dump({"date": today, "quiz": questions}, f, indent=2)
+        logger.info("Wrote %d questions to %s", len(questions), output_file)
+        return output_file
+    except Exception as e:
+        logger.exception("Failed to fetch today's questions from Firestore")
+        raise HTTPException(status_code=500, detail=f"Database Fetch Error: {str(e)}")
+
+
 def inject_reference_questions(data: ReferenceSection):
     try:
         doc_ref = db.collection(data.collection).document(data.section_name)
