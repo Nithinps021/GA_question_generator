@@ -26,7 +26,7 @@ The blueprint draws from the formats below. Use these definitions to render what
    -> Word Order / Sentence Formation: 5–6 jumbled words are given (labelled or unlabelled); the student picks the option that arranges them into a grammatically correct and meaningful sentence.
 
 3. Vocabulary & Fillers — format definitions:
-   -> Cloze Test: one passage with N numbered blanks (N set by the blueprint). Include the full passage with blanks ONLY in the first Cloze question's "question" field, followed by the actual question for blank (1). For subsequent Cloze questions, prefix with "Based on the passage above, " followed by the question for the next blank (e.g., "Based on the passage above, choose the correct word for blank (2)"). Every question must contain a clear, answerable question — never just the passage alone.
+   -> Cloze Test: one passage with N numbered blanks (N set by the blueprint). Keep the passage under 120 words so it fits within Telegram's message limit when repeated. For EVERY Cloze question, include the full passage (with all blanks shown) in the "question" field, followed by the actual question for that blank (e.g., "Choose the correct word for blank (1)"). Never omit the passage from any Cloze question — repeat it in full each time.
    -> Double Fillers: a sentence with two blanks; options are word PAIRS.
    -> Word Swap: a sentence where two words must be interchanged to make it correct; options name the pair to swap.
    -> Word Usage: a target word followed by sentences; choose the sentence using the word correctly.
