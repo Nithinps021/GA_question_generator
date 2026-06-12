@@ -68,6 +68,35 @@ GRAMMAR_FORMATS = [
     "Word Order / Sentence Formation (5–6 jumbled words given; arrange them into a grammatically correct meaningful sentence; options are different orderings)",
 ]
 
+# Grammar topics / rules the questions should test.  Each run picks a random
+# subset so the model can't keep defaulting to the same patterns every day.
+GRAMMAR_TOPICS = [
+    "subject-verb agreement",
+    "tense error (simple vs continuous vs perfect)",
+    "tense sequence / tense consistency",
+    "article usage (a / an / the / zero article)",
+    "preposition error",
+    "pronoun case or reference error",
+    "correlative conjunctions (either…or / neither…nor / not only…but also)",
+    "parallelism / faulty parallel structure",
+    "dangling or misplaced modifier",
+    "redundancy / tautology",
+    "comparative vs superlative degree",
+    "adjective-adverb confusion",
+    "active-passive voice error",
+    "conditional sentence error (if-clause tense)",
+    "gerund vs infinitive",
+    "relative clause error (who / whom / which / that)",
+    "modal verb misuse (can / could / may / might / should / must)",
+    "direct-indirect speech conversion error",
+    "wrong word form (noun used as verb or vice-versa)",
+    "idiomatic / collocational error",
+    "double negative",
+    "run-on sentence / comma splice",
+    "singular-plural noun error (uncountable noun treated as countable, etc.)",
+    "conjunctions misuse (although…but / since…therefore / despite…but)",
+]
+
 # Vocab formats: ("directive", kind). "set" formats absorb the whole block as
 # one passage of N items; "unit" formats are one question each.
 VOCAB_FORMATS = [
@@ -135,7 +164,21 @@ def _grammar_directive(count: int) -> str:
     n_formats = random.randint(1, min(3, count))
     chosen = random.sample(GRAMMAR_FORMATS, n_formats)
     sizes = _partition(count, n_formats)
-    return "\n".join(f"  - {n} x {fmt}" for n, fmt in zip(sizes, chosen))
+
+    # Pick one distinct grammar topic per question so the LLM doesn't keep
+    # testing the same rule (e.g. "neither…nor") every day.
+    topics = random.sample(GRAMMAR_TOPICS, min(count, len(GRAMMAR_TOPICS)))
+    topic_idx = 0
+    lines = []
+    for n, fmt in zip(sizes, chosen):
+        assigned = topics[topic_idx : topic_idx + n]
+        topic_idx += n
+        topic_str = ", ".join(assigned)
+        lines.append(
+            f"  - {n} x {fmt}\n"
+            f"    Grammar rules to test (one per question, in order): {topic_str}"
+        )
+    return "\n".join(lines)
 
 
 def _vocab_directive(count: int) -> str:
